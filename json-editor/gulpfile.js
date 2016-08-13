@@ -33,7 +33,7 @@ gulp.task('build-css', () =>
 )
 
 gulp.task('watch', () =>
-  gulp.watch(jsFile.concat(cssFile), ['build-js', 'build-css'])
+  gulp.watch(cssFile.concat(jsFile), ['default'])
 )
 
 gulp.task('default', () =>

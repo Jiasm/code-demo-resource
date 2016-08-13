@@ -1,0 +1,21 @@
+{
+  "name": "Niko",
+  "age": 18,
+  "friends": [
+    {
+      "name": "Bellic",
+	  "age": 20
+	},
+	{
+      "name": "Tom",
+	  "age": 22
+	}
+  ],
+  "likes": {
+    "food": [
+      "egg",
+	  "milk"
+	],
+	"girl": "Uncaught ReferenceError: Object1 is not defined"
+  }
+}
