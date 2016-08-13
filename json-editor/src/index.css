@@ -1,0 +1,13 @@
+@charset "UTF-8";
+
+body {
+  font-family: '苹方', '微软雅黑', sans-serif;
+}
+
+#output {
+  margin-top: 128px;
+  min-height: 256px;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  box-shadow: 0 2px 5px rgba(0,0,0,.258824);
+}
