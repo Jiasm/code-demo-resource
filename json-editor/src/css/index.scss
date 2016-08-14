@@ -1,0 +1,148 @@
+* {
+  font-family: monospace;
+}
+html {
+  min-height: 100%;
+  position: relative;
+  cursor: default;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.footer {
+  background-color: #f5f5f5;
+  bottom: 0;
+  height: 60px;
+  position: absolute;
+  width: 100%;
+}
+
+.container {
+  max-width: 780px;
+  padding: 0 15px;
+  width: auto;
+  text-align: center;
+}
+
+.container .text-muted {
+  margin: 20px 0;
+}
+
+.title-row {
+  margin: 0;
+  span {
+    cursor: pointer;
+  }
+}
+
+button.btn {
+  margin: 12px 0;
+}
+
+.findthem {
+  display: none;
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+  padding: 10px;
+  color: #333;
+  cursor: default;
+}
+
+.notice-error {
+  display: none;
+}
+
+span.editor-tag {
+  padding: 3px 8px;
+}
+
+.editor-input {
+  margin-bottom: 5px;
+}
+
+.tree {
+  min-height: 600px;
+  overflow-x: auto;
+  margin: 0 15px;
+}
+
+.tree li {
+  list-style-type: none;
+  margin: 0;
+  padding: 10px 5px 0 5px;
+  position: relative
+}
+
+.tree li::before,
+.tree li::after {
+  content: '';
+  left: -20px;
+  position: absolute;
+  right: auto
+}
+
+.tree li::before {
+  border-left: 1px solid #999;
+  bottom: 50px;
+  height: 110%;
+  top: 0;
+  width: 1px
+}
+
+.tree li::after {
+  border-top: 1px solid #999;
+  height: 20px;
+  top: 25px;
+  width: 25px
+}
+
+.tree li label>span,
+.tree li input {
+  border-radius: 5px;
+  display: inline-block;
+  padding: 3px 8px;
+  text-decoration: none
+}
+
+.tree>ul>li::before,
+.tree>ul>li::after {
+  border: 0
+}
+
+.tree li:last-child::before {
+  height: 25px
+}
+
+.row {
+  margin: 0;
+  padding: 15px;
+}
+
+#path-wrap {
+  display: none;
+}
+.input-group {
+  width: 100%;
+}
+.input-group .input-group-addon {
+  width: 8em;
+  position: relative;
+  z-index: 3;
+  border-right: 1px solid #ccc;
+}
+.form-control {
+  margin-left: -4px;
+}
+input.form-control {
+  padding-left: 8px;
+}
+.title-row label>span:hover,
+.title-row label>span.selected {
+    background-color: #f5f5f5;
+}
+
+.fa-cog {
+  display: none;
+}

@@ -1,25 +1,37 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>在线JSON文件编辑</title>
-    <link rel="stylesheet" href="./build/css/index.css">
-  </head>
-  <body>
 
-    <h1>JSON文件编辑</h1>
+<head>
+  <meta charset="utf-8">
+  <title>在线JSON文件编辑</title>
+  <link href="http://cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+  <link href="http://cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="./build/css/index.css">
+</head>
 
-    <input type="file" id="file" />
+<body>
 
-    <div id="output">
-
+  <div class="row">
+    <h1 class="col-md-12">JSON文件编辑</h1>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <input type="file" id="file" />
     </div>
+  </div>
 
-    <script type="text/javascript" src="./build/js/index.js"></script>
+  <div id="output">
+
+  </div>
+
+  <script type="text/javascript" src="./build/js/index.js"></script>
     <script>
       new JSONEditor({
-        fileInput: document.querySelector('#file')
+        container: '#output',
+        fileInput: '#file',
+        unionKey: '$'
       })
     </script>
-  </body>
+</body>
+
 </html>
