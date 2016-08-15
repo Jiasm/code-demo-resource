@@ -158,9 +158,7 @@
         <li data-key="${key}">
           <p class="title-row">
             <label class="editor-tag">
-              <span class="node-title">${key}</span>
-              ：
-              <span class="node-value">${value}</span>
+              <span class="node-title">${key}</span>：<span class="node-value">${value}</span>
             </label>
           </p>
           <input type="hidden" class="data-item" data-key="${key}" data-type=${type} value="${value}">
