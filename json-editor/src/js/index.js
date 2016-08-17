@@ -5,7 +5,7 @@
   let qs = s => qsa(s)[0]
   let treeList = 'tree-list'
   let attrList = 'attr-list'
-  let _unionKey = '.$.$.'
+  let _unionKey = '.'
 
   class JSONEditor {
     /**
@@ -43,7 +43,7 @@
         data: data
       })
 
-      this.$json.innerHTML = virtual.getDom()
+      this.$json.appendChild(virtual.getDom())
     }
 
     init () {
@@ -81,10 +81,18 @@
       this.unionKey = _unionKey
     }
 
+    /**
+     * 返回子类名称
+     */
     is () {
       return this.constructor.name
     }
 
+    /**
+     * getDom会在返回 一个对应DOM元素的同时 塞到this.$dom 中
+     * 这样就可以避免了以后的对dom操作还需要获取的问题了
+     * 理想状态下 不直接操作dom元素
+     */
     getDom () {
       throw new Error('this function not defined')
     }
@@ -109,31 +117,40 @@
     }
 
     getDom (parent) {
-      let key = (parent ? parent + this.unionKey + this.key : this.key)
-      return `
-        <li data-key="${key}">
-          <p class="title-row">
-            <i class="open-item fa fa-chevron-down"></i>
-            <label class="editor-tag">
-              <span>${this.key}</span>
-            </label>
-          </p>
-          <ul class="tree-container" style="display: block;">
-            ${this.getChildDom(key)}
-          </ul>
-        </li>
+      let {key, unionKey} = this
+      let virtualKey = (parent ? parent + unionKey + key : key)
+      let $dom = this.$dom = document.createElement('li')
+      let $child = this.$child = document.createElement('ul')
+
+      $dom.dataset['key'] = virtualKey
+      $dom.dataset['type'] = 'object'
+
+      $dom.innerHTML = `
+        <p class="title-row">
+          <i class="open-item fa fa-chevron-down"></i>
+          <label class="editor-tag">
+            <span>${key}</span>
+          </label>
+        </p>
       `
+
+      $child.classList.add('tree-container')
+      $child.appendChild(this.getChildDom(key))
+
+      $dom.appendChild($child)
+
+      return $dom
     }
 
     getChildDom (...arg) {
       let keel = this.keel
-      let str = ''
+      let $wrap = document.createDocumentFragment()
       for (let key in keel) {
         let item = keel[key]
-        str += item.getDom(...arg)
+        $wrap.appendChild(item.getDom(...arg))
       }
 
-      return str
+      return $wrap
     }
   }
   /**
@@ -152,18 +169,30 @@
       this.type = typeof value
     }
 
-    getDom () {
-      let {key, type, value} = this
-      return `
-        <li data-key="${key}">
-          <p class="title-row">
-            <label class="editor-tag">
-              <span class="node-title">${key}</span>：<span class="node-value">${value}</span>
-            </label>
-          </p>
-          <input type="hidden" class="data-item" data-key="${key}" data-type=${type} value="${value}">
-        </li>
+    getDom (parent) {
+      let {type, value, key, unionKey} = this
+      let virtualKey = (parent ? parent + unionKey + key : key)
+      let $dom = this.$dom = document.createElement('li')
+      let $value = this.$value = document.createElement('input')
+      $dom.dataset['key'] = virtualKey
+      $dom.dataset['type'] = 'value'
+      $dom.innerHTML = `
+        <p class="title-row">
+          <label class="editor-tag">
+            <span class="node-title">${key}</span>：<span class="node-value">${value}</span>
+          </label>
+        </p>
       `
+
+      $value.setAttribute('type', 'hidden')
+      $value.setAttribute('value', value)
+      $value.dataset['key'] = key
+      $value.dataset['type'] = type
+      $value.classList.add('data-item')
+
+      $dom.appendChild($value)
+
+      return $dom
     }
   }
 
