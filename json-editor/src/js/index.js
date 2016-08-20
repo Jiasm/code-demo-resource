@@ -6,16 +6,18 @@
   let treeList = 'tree-list'
   let attrList = 'attr-list'
   let _unionKey = '.'
+  let _rootKey = '/'
 
   class JSONEditor {
     /**
      * fileInput  [Element]   文件上传的控件 需要监听change事件
      */
-    constructor ({fileInput, container, unionKey = _unionKey}) {
+    constructor ({fileInput, container, unionKey = _unionKey, rootKey = _rootKey}) {
       this.$file = qsa(fileInput)[0]
       this.$wrap = qsa(container)[0]
 
       _unionKey = unionKey
+      _rootKey = rootKey
 
       this.init()
     }
@@ -38,14 +40,61 @@
      * @param [JSON]    一个JSON对象
      */
     setData (data) {
-      let virtual = this.virtual = new NodeObject({
-        key: 'root',
+      let root = new NodeRoot({
+        key: _rootKey,
         data: data
       })
+      this.virtual = {
+        [_rootKey]: root
+      }
 
-      this.$json.appendChild(virtual.getDom())
+      this.$json.innerHTML = ''
+      this.$json.appendChild(root.getDom())
+
+      this.complete()
     }
 
+    /**
+     * 取出某个key对应的Node对象
+     * @param {Array} keys                  一个由特定字符分割的key的集合
+     * @param {NodeBase} datas              Node对象 默认为 editor的根节点shuju
+     */
+    getData (keys, datas = this.virtual) {
+      let [key, ...child] = keys
+
+      // 如果匹配到当前的key 取出对应对象
+      if (Object.keys(datas).includes(key)) {
+        let {[key]: data} = datas
+
+        // 如果对象是一个NodeObject 或者 NodeRoot 并且获取到的key还有子项 则继续匹配下去
+        if ((data.is('NodeObject') || data.is('NodeRoot')) && child.length) {
+          return this.getData(child, data.keel)
+        } else {
+          return data
+        }
+      } else {
+        return null
+      }
+    }
+
+    /**
+     * 用来监听一些界面操作的事件 并去同步更新数据以及UI展示
+     */
+    delegate () {
+      this.$json.addEventListener('click', ({target}) => {
+        let obj = parent(target, 'jarvis-node')
+        let key = obj.dataset['key']
+        console.log(this.getData(key.split(_unionKey)))
+      })
+    }
+
+    complete () {
+      this.virtual[_rootKey].complete()
+    }
+
+    /**
+     * 初始化 用来DOM结构的构建 以及上传文件事件的监听
+     */
     init () {
       // 添加两个展示用的容器DOM
       this.$wrap.innerHTML = `
@@ -65,11 +114,13 @@
 
       // 展示节点的容器
       this.$json = qs(`#${treeList}`)
-      // 展示属性的容器
-      this.$attr = qs(`#${attrList}`)
+      // // 展示属性的容器
+      // this.$attr = qs(`#${attrList}`)
 
       // 绑定文件上传的事件
       this.$file.addEventListener('change', ({target: {files: [file]}}) => this.changeHandler(file))
+
+      this.delegate()
     }
   }
 
@@ -79,13 +130,14 @@
   class NodeBase {
     constructor () {
       this.unionKey = _unionKey
+      this.className = ['jarvis-node']
     }
 
     /**
-     * 返回子类名称
+     * 返回子类名称是否与传入值相等
      */
-    is () {
-      return this.constructor.name
+    is (target) {
+      return this.constructor.name === target
     }
 
     /**
@@ -94,13 +146,14 @@
      * 理想状态下 不直接操作dom元素
      */
     getDom () {
-      throw new Error('this function not defined')
+      throw new Error('children should be implement [getDom]')
+    }
+
+    complete () {
+      throw new Error('children should be implement [complete]')
     }
   }
 
-  /**
-   * 一个引用类型节点的封装
-   */
   class NodeObject extends NodeBase {
     constructor (...arg) {
       super(...arg)
@@ -111,19 +164,22 @@
 
       this.key = key
       this.type = Array.isArray(data) ? 'array' : 'object'
+      this.className.push('jarvis-node-object')
+      this.nodeType = 'object'
       let keel = this.keel = {}
 
       buildObject(keel, data)
     }
 
     getDom (parent) {
-      let {key, unionKey} = this
+      let {key, unionKey, className, nodeType} = this
       let virtualKey = (parent ? parent + unionKey + key : key)
       let $dom = this.$dom = document.createElement('li')
       let $child = this.$child = document.createElement('ul')
 
+      $dom.className = className.join(' ')
       $dom.dataset['key'] = virtualKey
-      $dom.dataset['type'] = 'object'
+      $dom.dataset['type'] = nodeType
 
       $dom.innerHTML = `
         <p class="title-row">
@@ -135,7 +191,7 @@
       `
 
       $child.classList.add('tree-container')
-      $child.appendChild(this.getChildDom(key))
+      $child.appendChild(this.getChildDom(virtualKey))
 
       $dom.appendChild($child)
 
@@ -152,6 +208,24 @@
 
       return $wrap
     }
+
+    complete () {
+      for (let key in this.keel) {
+        this.keel[key].complete()
+      }
+    }
+  }
+
+  /**
+   * 一个引用类型节点的封装
+   */
+  class NodeRoot extends NodeObject {
+
+    constructor (...arg) {
+      super(...arg)
+      this.className.push('jarvis-node-root')
+      this.nodeType = 'root'
+    }
   }
   /**
    * 一个普通的值类型的节点对象
@@ -167,15 +241,19 @@
       this.key = key
       this.value = value
       this.type = typeof value
+      this.className.push('jarvis-node-text')
+      this.nodeType = 'value'
     }
 
     getDom (parent) {
-      let {type, value, key, unionKey} = this
+      let {type, value, key, unionKey, className, nodeType} = this
       let virtualKey = (parent ? parent + unionKey + key : key)
       let $dom = this.$dom = document.createElement('li')
       let $value = this.$value = document.createElement('input')
+
+      $dom.className = className.join(' ')
       $dom.dataset['key'] = virtualKey
-      $dom.dataset['type'] = 'value'
+      $dom.dataset['type'] = nodeType
       $dom.innerHTML = `
         <p class="title-row">
           <label class="editor-tag">
@@ -194,6 +272,12 @@
 
       return $dom
     }
+
+    complete () {
+      this.$dom.addEventListener('click', () => {
+        console.log(this.$value.value)
+      })
+    }
   }
 
   /**
@@ -211,6 +295,16 @@
         obj[key] = new NodeText({key, value: item})
       }
     }
+  }
+
+  function parent (dom, className) {
+    do {
+      if (dom.classList.contains(className)) {
+        return dom
+      }
+    } while ((dom = dom.parentNode, dom))
+
+    return null
   }
 
   return JSONEditor
